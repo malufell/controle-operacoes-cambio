@@ -1,0 +1,7 @@
+<% if(error) { %>
+    <% error.forEach(function(erro) { %>
+        <div class="alert alert-danger mr-3 ml-3" role="alert">
+            <%= erro %>
+        </div>
+    <% }) %>
+<% } %>

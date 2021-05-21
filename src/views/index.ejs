@@ -1,25 +1,120 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-    <title>Document</title>
+   <%- include('../views/partials/head.ejs') %>
+    <title>Operações de Câmbio</title>
 </head>
 <body>
+
+    <h1 class="text-center m-5">Operações de Câmbio</h1>
     <div class="container-fluid">
-        <div class="container">
-            <h1 class="text-start m-5">View com EJS</h1>
-            <ul>
-                <li>"dotenv"</li>
-                <li>"ejs"</li>
-                <li>"express"</li>
-                <li>"pg"</li>
-                <li>"sequelize"</li>
-                <li>"sequelize-cli"</li>
-            </ul>
+        <div class="mx-3">
+
+            <!-- Busca -->
+            <div class="container">
+                <form action='/?' class="search pl-3">
+                    <fieldset class="border rounded-1 p-3">
+                        <div class="row d-flex align-items-end">
+                            <div class="col-md-3 col-sm-12">
+                                <label for="dataInicio" class="col-form-label-sm fw-bold">Data Início:</label>
+                                <input type="date" class="form-control" name="dataInicio">
+                            </div>
+                            <div class="col-md-3 col-sm-12">
+                                <label for="dataTermino" class="col-form-label-sm fw-bold">Data Fim:</label>
+                                <input type="date" class="form-control" name="dataTermino">
+                            </div>
+                            <div class="col-md-3 col-sm-12">
+                                <label for="q" class="col-form-label-sm fw-bold">Cliente:</label>
+                                <input type="search" id="search" name="q" class="form-control" placeholder="Havan">
+                            </div>
+                            <div class="col-md-3 col-sm-12 d-grid gap-2">
+                                <button class="btn btn-outline-secondary mt-2">Buscar</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                <div class="row mt-4">
+                    <div class="col-lg-3 col-md-4 col-sm-12 d-grid gap-2">
+                        <a href="/cadastro" type="button" class="btn btn-secondary mt-2">Cadastrar Operação</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-12 d-grid gap-2">
+                        <a href="/taxas" type="button" class="btn btn-outline-secondary mt-2">Ver moedas cadastradas</a>
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-sm-12 d-grid gap-2">
+                        <a href="/taxas/cadastro" type="button" class="btn btn-outline-secondary mt-2">Cadastrar valor para conversão</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatório -->
+            <% if(operacaoNaoEncontrada) { %>
+                <div class="alert alert-danger mt-3" role="alert">
+                    Ops... não localizamos operações que correspondem a sua busca. <a href="/" class="alert-link">Clique aqui</a> para limpar a pesquisa, ou refaça a busca com outros critérios.
+                </div>
+            <% } %>
+
+            <div class="table-responsive mt-5">
+	            <table class="table table-bordered table-sm table-striped table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr class="align-middle text-center small">
+                            <th scope="col">Id operação</th>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Moeda de Origem</th>
+                            <th scope="col">Moeda de Destino</th>
+                            <th scope="col">Data da Operação</th>
+                            <th scope="col">Valor Original</th>
+                            <th scope="col">Valor Convertido</th>
+                            <th scope="col">Taxa Cobrada</th>
+                            <th scope="col">Editar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="align-middle text-center small">
+                        <tr>
+                        <% operacoes.forEach(function(operacao) { %>
+                                <td scope="row" id="operacaoId"> <%= operacao.id %> </td> 
+                                <td> <%= operacao.cliente %> </td> 
+                                <td> <%= operacao.Taxa.descricaoMoedaOrigem %> </td> 
+                                <td> <%= operacao.Taxa.descricaoMoedaDestino %> </td> 
+                                <td> <%= operacao.dataOperacao %> </td> 
+                                <td> <%= operacao.valorOriginal %> </td> 
+                                <td> <%= operacao.valorConvertido %> </td> 
+                                <td> <%= operacao.taxaCobrada %> </td> 
+                                <td><a href="/operacao/<%=operacao.id%>"><i class="bi bi-pencil-square"></i></a></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                    <thead>
+                        <tr class="small">
+                            <th colspan="5" class="text-end">Totais:</th>
+                            <th class="text-center"><%= totais.map((total) => total.dataValues.totalValorOriginal)%></th>
+                            <th class="text-center"><%= totais.map((total) => total.dataValues.totalValorConvertido)%></th>
+                            <th class="text-center"><%= totais.map((total) => total.dataValues.totalTaxaCobrada)%></th>
+                            <th colspan="1"></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <!-- Alertas -->
+            <% if(operacoes.length === 0 && !operacaoNaoEncontrada) { %>
+                <div class="alert alert-primary mt-3" role="alert">
+                    Nenhuma operação cadastrada. Clique em "Cadastrar Operação" ou <a href="/cadastro" class="alert-link">aqui</a> para efetuar um cadastro.
+                </div>
+            <% } %>
+
+            <% if(operacaoNaoEncontrada === false) { %>
+                <caption>
+                    <%= dataInicio && dataTermino ? `Lista de operações referente ao período de ${dataInicio} até ${dataTermino}` : ""%>
+                    <%= dataInicio && !dataTermino ? `Lista de operações registradas em ${dataInicio}` : !dataInicio && dataTermino ? `Lista de operações registradas em ${dataTermino}` : ""%>
+                    <%= !dataInicio && !dataTermino ? `Lista dos operações de todo o período,` : ""%>
+                    <%= cliente ? `contemplando clientes com o termo "${cliente}" no nome` : `contemplando todos os clientes` %>
+                    <p><a href="/" class="small">Limpar pesquisa</a></p>
+                </caption>
+            <% } %>
+
         </div>
     </div>
+    <%- include('../views/partials/script-bootstrap.ejs') %>
 </body>
 </html>

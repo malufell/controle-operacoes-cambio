@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <%- include('../views/partials/head.ejs') %>
+    <title>Moedas</title>
+</head>
+<body>
+
+    <h1 class="text-center m-5">Lista de Moedas para Conversão</h1>
+    <div class="container-fluid">
+        <div class="container">
+            <div class="mx-3">
+                <div class="row mt-4">
+                    <div class="col-lg-3 col-md-4 col-sm-12 d-grid gap-2">
+                        <a href="/taxas/cadastro" type="button" class="btn btn-secondary mt-2">Cadastrar valor para conversão</a>
+                    </div>
+                    <div class="mt-3">
+                        <a href="/" class="small ps-1 mb-3 text-muted">Voltar para operações</a>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mt-5">
+                <table class="table table-bordered table-sm table-striped table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr class="align-middle text-center small">
+                            <th scope="col">Id cadastro</th>
+                            <th scope="col">Descrição Moeda Origem</th>
+                            <th scope="col">Sigla Moeda Origem</th>
+                            <th scope="col">Descrição Moeda Destino</th>
+                            <th scope="col">Sigla Moeda Destino</th>
+                            <th scope="col">Taxa de Conversão</th>
+                            <th scope="col">Editar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="align-middle text-center small">
+                        <% taxas.forEach(function(taxa) { %>
+                            <tr>
+                                <td scope="row"><%= taxa.id %></td>
+                                <td><%= taxa.descricaoMoedaOrigem %></td>
+                                <td><%= taxa.moedaOrigem %></td>
+                                <td><%= taxa.descricaoMoedaDestino %></td>
+                                <td><%= taxa.moedaDestino %></td>
+                                <td><%= taxa.taxa %></td>
+                                <td><a href="/taxas/<%=taxa.id%>"><i class="bi bi-pencil-square"></i></a></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <%- include('../views/partials/script-bootstrap.ejs') %>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+   <%- include('../views/partials/head.ejs') %>
+    <title>Cadastro de Taxas para Conversão</title>
+</head>
+
+<body>
+    <h1 class="text-center m-5"><%= taxa.id ? "Editar taxa para conversão" : "Cadastrar taxa para conversão"%></h1>
+    <div class="container-fluid">
+        <div class="container col-sm-12 col-md-10 col-lg-6">
+
+            <% if(taxa.id) { %>
+              <form method="POST" action="/taxas/<%= taxa.id %>/?_method=PUT" id="form">
+            <% } else { %>
+              <form method='POST' action='/taxas/cadastro' id="form">
+            <% } %>
+
+                <%- include('../views/partials/alert-erro-validacao.ejs') %>
+
+                <input type="hidden" name="moedaOrigem" id="moedaOrigem">
+                <div class="row d-flex align-items-end">
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label for="descricaoMoedaOrigem" class="form-label fw-bold">Selecione a Moeda de Origem:</label>
+                        <div class="input-group mb-1">
+                            <select class="form-select" name="descricaoMoedaOrigem" id="descricaoMoedaOrigem" required>
+                                <option value="" <%= !taxa ? "selected disabled" : "hidden" %>> Selecione...</option> 
+                                <% for (const key in opcoes) { %>
+                                    <% let moedaOrigemSeleciona = false; %>
+                                        <% if (taxa) { %>
+                                            <% if (taxa.moedaOrigem == key) { %>
+                                                <% moedaOrigemSeleciona = true %>
+                                            <% } %>
+                                        <% } %> 
+                                    <option value="<%= opcoes[key] %>" data-ref="<%= key %>" <%= moedaOrigemSeleciona ? "selected" : "" %> > <%=opcoes[key] %> - <%=key%> </option> 
+                                <% }; %>
+                            </select>
+                        </div>
+                    </div>      
+                    <input type="hidden" name="moedaDestino" id="moedaDestino">
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label class="col-form-label fw-bold" for="descricaoMoedaDestino">Selecione a Moeda Destino:</label>
+                        <div class="input-group mb-1">
+                             <select class="form-select" name="descricaoMoedaDestino" id="descricaoMoedaDestino" required>
+                                <option value="" <%= !taxa ? "selected" : "hidden" %>> Selecione...</option> 
+                            <% for (const key in opcoes) { %>
+                                <% let moedaDestinoSelecionada = false; %>
+                                    <% if (taxa) { %>
+                                        <% if (taxa.moedaDestino == key) { %>
+                                            <% moedaDestinoSelecionada = true %>
+                                        <% } %>
+                                    <% } %> 
+                                <option value="<%= opcoes[key] %>" data-ref="<%= key %>" <%= moedaDestinoSelecionada ? "selected" : "" %>> <%=opcoes[key] %> - <%=key%></option> 
+                           <% } %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <label for="taxa" class="form-label fw-bold" id="labeltaxa">Taxa de Conversão:</label>
+                <span id="taxaInformada"></span>
+                <div class="input-group mb-1">
+                    <input type="number" step="0.01" class="form-control" id="taxa" name="taxa" value="<%=taxa.taxa%>" placeholder="exemplo: 1,50"
+                        aria-label="Taxa de Conversão" required>
+                </div>
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-secondary" onclick="return enviaDados()"> <%= taxa.id ? "Salvar alterações" : "Cadastrar taxa"%></button>
+                </div>
+            </form>
+
+            <% if (taxa.id) { %>
+                <div class="d-grid mt-3">
+                    <a type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalExclusao"> Excluir taxa de conversão </a>
+                </div>
+            <% } %>
+            <%- include('../views/partials/modal-exclusao-taxa.ejs') %>
+           
+        </div>
+    </div>
+
+    <script>
+        const taxaInformada = document.getElementById('taxa');
+        taxaInformada.addEventListener("input", () => { exibePreviaDoValorFormatado() }, false);
+       
+        function exibePreviaDoValorFormatado() {
+            let valor = +taxaInformada.value;
+            document.getElementById("taxaInformada").textContent = valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+        };
+       
+        function enviaDados() { 
+            const selectMoedaOrigem = document.getElementById('descricaoMoedaOrigem');
+            const optionMoedaOrigem = selectMoedaOrigem.options[selectMoedaOrigem.selectedIndex];
+            const siglaMoedaOrigem = optionMoedaOrigem.dataset.ref;
+            document.getElementById('moedaOrigem').value = siglaMoedaOrigem;
+
+            const selectMoedaDestino = document.getElementById('descricaoMoedaDestino');
+            const optionMoedaDestino = selectMoedaDestino.options[selectMoedaDestino.selectedIndex];
+            const siglaMoedaDestino = optionMoedaDestino.dataset.ref;
+            document.getElementById('moedaDestino').value = siglaMoedaDestino;
+        };
+    </script>
+    <%- include('../views/partials/script-bootstrap.ejs') %>
+</body>
+</html>

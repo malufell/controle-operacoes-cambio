@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <%- include('../views/partials/head.ejs') %>
+    <title>Operações de Câmbio</title>
+</head>
+
+<body>
+    <h1 class="text-center m-5"><%= operacao.id ? "Editar Operação de Câmbio" : "Cadastro de Operações de Câmbio"%></h1>
+    <div class="container-fluid">
+        <div class="container col-sm-12 col-md-10 col-lg-6">
+
+            <% if(operacao.id) { %>
+              <form method="POST" action="/operacao/<%=operacao.id%>/?_method=PUT" id="form">
+            <% } else { %>
+              <form method='POST' action='/cadastro' id="form">
+            <% } %>
+
+                <input type="hidden" name="valorConvertido" id="valorConvertido">
+                <input type="hidden" name="taxaCobrada" id="taxaCobrada">
+                <input type="hidden" name="taxaId" id="taxaId">
+                <%- include('../views/partials/alert-erro-validacao.ejs') %>
+                <div class="mb-2">
+                    <label for="cliente" class="form-label fw-bold">Cliente:</label>
+                    <input type="text" class="form-control" name="cliente" value="<%=operacao.cliente%>" placeholder="Havan" required>
+                </div>
+
+                <div class="row">
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label class="col-form-label fw-bold" for="moedaOrigem">Moeda de origem:</label>
+                        <select class="form-select" name="moedaOrigem" id="moedaOrigem" required>
+                        <option value="" <%= !operacao.Taxa ? "selected" : "hidden" %>> Selecione...</option> 
+                        <% opcoesMoedaOrigem.forEach(function(taxa) { %>
+                                <% let taxaSelecionada = false; %>
+                                    <% if (operacao.Taxa) { %>
+                                        <% if (operacao.Taxa.moedaOrigem == taxa.moedaOrigem) { %>
+                                            <% taxaSelecionada = true %>
+                                        <% } %>
+                                    <% } %> 
+                            <option value="<%= taxa.moedaOrigem %>" <%= taxaSelecionada ? "selected" : "" %>> <%=taxa.descricaoMoedaOrigem %></option> 
+                        <% }); %>
+                        </select>
+                    </div>
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label class="col-form-label fw-bold" for="moedaDestino">Moeda de destino:</label>
+                        <select class="form-select" name="moedaDestino" id="moedaDestino" required>
+                            <option value="<%= operacao.Taxa ? operacao.Taxa.moedaDestino : undefined %>"> <%= operacao.Taxa ? operacao.Taxa.descricaoMoedaDestino : undefined %> </option>
+                        </select>
+                    </div>
+                    <a href="/taxas" class="small mb-3 text-muted">Não encontrou o que procura? Clique aqui para cadastrar ou editar uma taxa</a>
+                </div>
+
+                <div class="row">
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label for="dataOperacao" class="form-label fw-bold">Data da Operação:</label>
+                        <input type="date" class="form-control" name="dataOperacao" value="<%=operacao.dataOperacao%>" required>
+                    </div>
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
+                        <label for="valorOriginal" class="form-label fw-bold" id="labelvalorOriginal">Valor Original:</label>
+                        <span id="valorOriginalInformado"></span>
+                        <div class="input-group mb-1">
+                            <input type="number" step="0.01" class="form-control" id="valorOriginal" name="valorOriginal" value="<%=operacao.valorOriginal%>" placeholder="exemplo: 30,00"
+                                aria-label="Valor original" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row d-flex align-items-end">
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-4">
+                        <label for="previaValorConvertido" class="form-label fw-bold">Valor Convertido:</label>
+                        <div class="input-group mb-1">
+                            <input disabled type="text" class="form-control" id="previaValorConvertido" name="previaValorConvertido" value="<%=operacao.valorConvertido%>" aria-label="Valor convertido" >
+                        </div>
+                    </div>
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-4">
+                        <label for="previaTaxaConversao" class="form-label fw-bold">Taxa de Conversão:</label>
+                        <div class="input-group mb-1">
+                            <input disabled type="number" step="0.01" class="form-control" id="previaTaxaConversao" name="previaTaxaConversao" value="<%= operacao.id ? operacao.Taxa.taxa : "" %>" aria-label="Taxa conversão" >
+                        </div>
+                    </div>
+                    <div class="mb-2 col-sm-12 col-md-10 col-lg-4">
+                        <label for="previaTaxaCobrada" class="form-label fw-bold">Taxa Cobrada (10%):</label>
+                        <div class="input-group mb-1">
+                            <input disabled type="text" class="form-control" id="previaTaxaCobrada" name="previaTaxaCobrada" value="<%=operacao.taxaCobrada%>" aria-label="Valor convertido" >
+                        </div>
+                    </div>
+                    <div class="d-grid  mb-4">
+                        <button type="submit" class="btn btn-secondary"> <%= operacao.id ? "Salvar alterações" : "Cadastrar operação"%></button>
+                    </div>
+                </div>
+            </form>
+
+            <% if (operacao.id) { %>
+                <div class="d-grid">
+                    <a type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalExclusao"> Excluir operação </a>
+                </div>
+            <% } %>
+            <%- include('../views/partials/modal-exclusao-operacao.ejs') %>
+        </div>
+    </div>
+
+    <script>
+        const selectMoedaOrigem = document.getElementById('moedaOrigem');
+        const selectMoedaDestino = document.getElementById('moedaDestino');
+        const valorOriginalInformado = document.getElementById('valorOriginal');
+        selectMoedaOrigem.addEventListener("change", () => { calculaConversao(), buscaMoedaDestino() }, false);
+        selectMoedaDestino.addEventListener("change", () => { calculaConversao() }, false);
+        valorOriginalInformado.addEventListener("input", () => { exibePreviaDoValorFormatado(), calculaConversao() }, false);
+
+        document.addEventListener("DOMContentLoaded", () => { exibePreviaDoValorFormatado(), calculaConversao() });
+
+        function buscaMoedaDestino() {
+            document.getElementById('moedaDestino').textContent = "";
+            const moedaOrigemInformada = document.getElementById("moedaOrigem").value;
+            const ajax = new XMLHttpRequest();
+            ajax.open("GET", `/moedaDestino?moedaOrigem=${moedaOrigemInformada}`, true);
+            ajax.send();
+            ajax.addEventListener("load", function() {
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    const opcoesMoedaDestino = JSON.parse(ajax.responseText);
+                    opcoesMoedaDestino.forEach(function(opcao) {
+                        const option = document.createElement("option")
+                        option.textContent = opcao.descricaoMoedaDestino;
+                        option.value = opcao.moedaDestino;
+                        selectMoedaDestino.appendChild(option);
+                    });
+                };
+            });
+        };
+
+        function exibePreviaDoValorFormatado() {
+            let valor = +valorOriginalInformado.value;
+            document.getElementById("valorOriginalInformado").textContent = valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        function calculaConversao() {
+            const moedaOrigemInformada = document.getElementById("moedaOrigem").value;
+            const moedaDestinoInformada = document.getElementById("moedaDestino").value;
+            const valorOriginal = document.getElementById("valorOriginal").value;
+            const taxaCobrada = 0.10;
+            const ajax = new XMLHttpRequest();
+
+            ajax.open("GET", `/conversao?moedaOrigem=${moedaOrigemInformada}&moedaDestino=${moedaDestinoInformada}`, true);
+            ajax.send();
+            ajax.addEventListener("load", function() {
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    const taxaCadastrada = JSON.parse(ajax.responseText);
+                    const valorConvertido = taxaCadastrada.taxa * valorOriginal;
+                    const valorTaxaCobrada = valorOriginal * taxaCobrada;
+                    document.getElementById("previaValorConvertido").value = valorConvertido.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    document.getElementById("previaTaxaConversao").value = taxaCadastrada.taxa;
+                    document.getElementById("previaTaxaCobrada").value = valorTaxaCobrada.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    document.getElementById("valorConvertido").value = valorConvertido;
+                    document.getElementById("taxaCobrada").value = valorTaxaCobrada;
+                    document.getElementById("taxaId").value = taxaCadastrada.id;
+                };
+            });
+        };
+    </script>  
+    <%- include('../views/partials/script-bootstrap.ejs') %>
+</body>
+</html>
