@@ -54,7 +54,6 @@ class Operacoes {
       const operacao = await database.Operacoes.findOne({ where: idOperacao, include: database.Taxas });
       operacao.valorConvertido = new FormataNumeroEmMoedaService(operacao.valorConvertido).call();
       operacao.taxaCobrada = new FormataNumeroEmMoedaService(operacao.taxaCobrada).call();
-
       return res.render("cadastro", {
         operacao: operacao,
         opcoesMoedaOrigem: opcoesMoedaOrigem,

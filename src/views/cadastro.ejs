@@ -29,16 +29,16 @@
                     <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
                         <label class="col-form-label fw-bold" for="moedaOrigem">Moeda de origem:</label>
                         <select class="form-select" name="moedaOrigem" id="moedaOrigem" required>
-                        <option value="" <%= !operacao.Taxa ? "selected" : "hidden" %>> Selecione...</option> 
-                        <% opcoesMoedaOrigem.forEach(function(taxa) { %>
-                                <% let taxaSelecionada = false; %>
-                                    <% if (operacao.Taxa) { %>
-                                        <% if (operacao.Taxa.moedaOrigem == taxa.moedaOrigem) { %>
-                                            <% taxaSelecionada = true %>
-                                        <% } %>
-                                    <% } %> 
-                            <option value="<%= taxa.moedaOrigem %>" <%= taxaSelecionada ? "selected" : "" %>> <%=taxa.descricaoMoedaOrigem %></option> 
-                        <% }); %>
+                            <option value="" <%= !operacao.Taxa ? "selected" : "hidden" %>> Selecione...</option> 
+                            <% opcoesMoedaOrigem.forEach(function(taxa) { %>
+                                    <% let taxaSelecionada = false; %>
+                                        <% if (operacao.Taxa) { %>
+                                            <% if (operacao.Taxa.moedaOrigem == taxa.moedaOrigem) { %>
+                                                <% taxaSelecionada = true %>
+                                            <% } %>
+                                        <% } %> 
+                                <option value="<%= taxa.moedaOrigem %>" <%= taxaSelecionada ? "selected" : "" %>> <%=taxa.descricaoMoedaOrigem %></option> 
+                            <% }); %>
                         </select>
                     </div>
                     <div class="mb-2 col-sm-12 col-md-10 col-lg-6">
@@ -133,26 +133,31 @@
             document.getElementById("valorOriginalInformado").textContent = valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
+        function setInput(field, value) {
+            return document.getElementById(field).value = value;
+        }
+
+        function formataNumero(value) {
+            return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
         function calculaConversao() {
             const moedaOrigemInformada = document.getElementById("moedaOrigem").value;
             const moedaDestinoInformada = document.getElementById("moedaDestino").value;
             const valorOriginal = document.getElementById("valorOriginal").value;
-            const taxaCobrada = 0.10;
             const ajax = new XMLHttpRequest();
 
-            ajax.open("GET", `/conversao?moedaOrigem=${moedaOrigemInformada}&moedaDestino=${moedaDestinoInformada}`, true);
+            ajax.open("GET", `/conversao?moedaOrigem=${moedaOrigemInformada}&moedaDestino=${moedaDestinoInformada}&valorOriginal=${valorOriginal}`, true);
             ajax.send();
             ajax.addEventListener("load", function() {
                 if (ajax.readyState == 4 && ajax.status == 200) {
-                    const taxaCadastrada = JSON.parse(ajax.responseText);
-                    const valorConvertido = taxaCadastrada.taxa * valorOriginal;
-                    const valorTaxaCobrada = valorOriginal * taxaCobrada;
-                    document.getElementById("previaValorConvertido").value = valorConvertido.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    document.getElementById("previaTaxaConversao").value = taxaCadastrada.taxa;
-                    document.getElementById("previaTaxaCobrada").value = valorTaxaCobrada.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    document.getElementById("valorConvertido").value = valorConvertido;
-                    document.getElementById("taxaCobrada").value = valorTaxaCobrada;
-                    document.getElementById("taxaId").value = taxaCadastrada.id;
+                    const conversao = JSON.parse(ajax.responseText);
+                    setInput('previaTaxaConversao', conversao.taxa);
+                    setInput('previaValorConvertido', formataNumero(conversao.valorConvertido));
+                    setInput('previaTaxaCobrada', formataNumero(conversao.valorTaxaCobrada));
+                    setInput('valorConvertido', conversao.valorConvertido);
+                    setInput('taxaCobrada', conversao.valorTaxaCobrada);
+                    setInput('taxaId', conversao.taxaId);
                 };
             });
         };

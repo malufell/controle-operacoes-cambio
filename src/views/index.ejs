@@ -70,8 +70,8 @@
                         </tr>
                     </thead>
                     <tbody class="align-middle text-center small">
-                        <tr>
                         <% operacoes.forEach(function(operacao) { %>
+                            <tr>    
                                 <td scope="row" id="operacaoId"> <%= operacao.id %> </td> 
                                 <td> <%= operacao.cliente %> </td> 
                                 <td> <%= operacao.Taxa.descricaoMoedaOrigem %> </td> 

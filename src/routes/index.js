@@ -11,7 +11,8 @@ router.get('/operacao/:id', Operacoes.editaRegistro);
 router.put('/operacao/:id/', Operacoes.atualizaRegistro);
 router.delete('/operacao/:id', Operacoes.deletaRegistro);
 
-router.get('/conversao', Taxas.buscaRegistro);
+router.get('/conversao', Taxas.calculaConversao);
+
 router.get('/taxas', Taxas.buscaRegistros);
 router.get('/taxas/cadastro', Taxas.exibeFormulario);
 router.post('/taxas/cadastro', Taxas.criaRegistro);

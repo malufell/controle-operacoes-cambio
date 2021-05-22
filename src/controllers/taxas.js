@@ -1,13 +1,14 @@
 const database = require("../models");
 const BuscaOpcoesMoedaDestinoService = require("../services/BuscaOpcoesMoedaDestino");
-const MoedasApiRequestService = require("../services/MoedasApiRequestService")
+const MoedasApiRequestService = require("../services/MoedasApiRequestService");
+const CalculaConversaoService = require("../services/CalculaConversao");
 
 class Taxas {
 
   static async exibeFormulario(req, res) {
     try {
       const listaMoedas =  new MoedasApiRequestService();
-      const opcoes = await listaMoedas.call()
+      const opcoes = await listaMoedas.call();
 
       return res.render("taxas-cadastro", {
         opcoes: opcoes,
@@ -30,7 +31,7 @@ class Taxas {
       const errors = error.message.split(',');
       const mensagens = errors.map(function (erro) { return erro.replace(/Validation error: /i, "") });
       const listaMoedas =  new MoedasApiRequestService();
-      const opcoes = await listaMoedas.call()
+      const opcoes = await listaMoedas.call();
       return res.render('taxas-cadastro', { error: mensagens, taxa: req.body, opcoes: opcoes});
     };
   };
@@ -38,7 +39,7 @@ class Taxas {
   static async editaRegistro(req, res) {
     const idTaxa = req.params; 
       const listaMoedas =  new MoedasApiRequestService();
-      const opcoes = await listaMoedas.call()
+      const opcoes = await listaMoedas.call();
     try {
         const taxa = await database.Taxas.findOne({ where: idTaxa });
         return res.render("taxas-cadastro", { 
@@ -51,7 +52,7 @@ class Taxas {
         const errors = error.message.split(',');
         const mensagens = errors.map(function (erro) { return erro.replace(/Validation error: /i, "") });
         const listaMoedas =  new MoedasApiRequestService();
-        const opcoes = await listaMoedas.call()
+        const opcoes = await listaMoedas.call();
         return res.render('taxas-cadastro', { error: mensagens, taxa: req.body, opcoes: opcoes});
     };
   };
@@ -70,18 +71,12 @@ class Taxas {
     }
   };
 
-  static async buscaRegistro(req, res) {
-    const { moedaOrigem, moedaDestino } = req.query;
+  static async calculaConversao(req, res) {
+    const { moedaOrigem, moedaDestino, valorOriginal } = req.query;
 
     try {
-      const taxa = await database.Taxas.findOne({ 
-        where: { 
-            moedaOrigem: moedaOrigem,
-            moedaDestino: moedaDestino    
-        }    
-     });
-        return res.status(200).json(taxa); 
-
+      const conversao = new CalculaConversaoService(moedaOrigem, moedaDestino, valorOriginal);
+      return res.status(200).json(await conversao.call());
     } catch (error) {
       return res.status(500).json(error.message); 
     };
